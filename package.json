@@ -1,0 +1,14 @@
+{
+  "name": "genshin-material-data",
+  "module": "index.ts",
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "type": "module",
+  "dependencies": {
+    "node-html-parser": "^6.1.11"
+  }
+}
