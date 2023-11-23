@@ -1,7 +1,8 @@
 import { HTMLElement } from "node-html-parser";
 import { getImageSrc, sanitize, walk } from "./html-function";
+import Database from "bun:sqlite";
 
-export type Character = {
+export type CharacterListItem = {
     name: string;
     image: string;
     stars: number;
@@ -10,10 +11,24 @@ export type Character = {
     region?: string;
 };
 
-export function extractCharacters(page: HTMLElement): Character[] {
+export type Character = {
+    name: string;
+    image: string;
+    stars: number;
+    weapon: string;
+    element?: string;
+    local_specialty: string;
+    region: string;
+    mob_material: string;
+    ascension_boss?: string;
+    talent_boss?: string;
+    talent_book?: string;
+};
+
+export function extractCharacters(page: HTMLElement): CharacterListItem[] {
     const playableHeader = page.getElementById('Playable_Characters');
 
-    const characters: Character[] = [];
+    const characters: CharacterListItem[] = [];
 
     let row = walk(playableHeader, '^>> vv>');
     do {

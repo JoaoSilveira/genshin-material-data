@@ -95,7 +95,7 @@ create table if not exists weapon_material_tier (
 create table if not exists gem_tier (
    id integer primary key,
    name text unique not null,
-   element_id integer not null references element_type(id),
+   element_id integer references element_type(id),
    low_id integer not null references material(id),
    mid_id integer not null references material(id),
    high_id integer not null references material(id),
@@ -109,13 +109,24 @@ create table if not exists character (
    image text,
    stars integer check (stars between 0 and 5),
    weapon_id integer not null references weapon_type(id),
-   element_id integer not null references element_type(id),
+   element_id integer references element_type(id),
    local_specialty_id integer not null references local_specialty(id),
    region_id integer not null references region(id),
    mob_material_id integer not null references enemy_material_tier(id),
-   ascension_boss_material_id integer not null references boss_material(id),
-   talent_boss_material_id integer not null references boss_material(id),
-   talent_book_id integer not null references talent_book_tier(id)
+   ascension_boss_material_id integer references boss_material(id),
+   talent_boss_material_id integer references boss_material(id),
+   talent_book_id integer references talent_book_tier(id)
+);
+
+
+create table if not exists traveler_talent_material (
+   element_id integer not null references element_type(id),
+   talent string not null check (talent in ('normal', 'elemental', 'burst')),
+   mob_material_id integer not null references enemy_material_tier(id),
+   first_book_id integer not null references talent_book_tier(id),
+   second_book_id integer not null references talent_book_tier(id),
+   third_book_id integer not null references talent_book_tier(id),
+   talent_boss_material_id integer not null references boss_material(id)
 );
 
 
@@ -174,6 +185,7 @@ create table if not exists weapon_level_cost (
    experience integer not null,
    primary key (level, weapon_stars)
 );
+
 
 create table if not exists weapon_ascension_cost (
    ascension_star integer,
@@ -1115,7 +1127,8 @@ insert into gem_tier (name, element_id, low_id, mid_id, high_id, highest_id) val
    ('Vajrada Amethyst', (select id from element_type where name = 'Electro'), (select id from material where name = 'Vajrada Amethyst Sliver'), (select id from material where name = 'Vajrada Amethyst Fragment'), (select id from material where name = 'Vajrada Amethyst Chunk'), (select id from material where name = 'Vajrada Amethyst Gemstone')),
    ('Vayuda Turquoise', (select id from element_type where name = 'Anemo'), (select id from material where name = 'Vayuda Turquoise Sliver'), (select id from material where name = 'Vayuda Turquoise Fragment'), (select id from material where name = 'Vayuda Turquoise Chunk'), (select id from material where name = 'Vayuda Turquoise Gemstone')),
    ('Shivada Jade', (select id from element_type where name = 'Cryo'), (select id from material where name = 'Shivada Jade Sliver'), (select id from material where name = 'Shivada Jade Fragment'), (select id from material where name = 'Shivada Jade Chunk'), (select id from material where name = 'Shivada Jade Gemstone')),
-   ('Prithiva Topaz', (select id from element_type where name = 'Geo'), (select id from material where name = 'Prithiva Topaz Sliver'), (select id from material where name = 'Prithiva Topaz Fragment'), (select id from material where name = 'Prithiva Topaz Chunk'), (select id from material where name = 'Prithiva Topaz Gemstone'));
+   ('Prithiva Topaz', (select id from element_type where name = 'Geo'), (select id from material where name = 'Prithiva Topaz Sliver'), (select id from material where name = 'Prithiva Topaz Fragment'), (select id from material where name = 'Prithiva Topaz Chunk'), (select id from material where name = 'Prithiva Topaz Gemstone')),
+   ('Brilliant Diamond', null, (select id from material where name = 'Brilliant Diamond Sliver'), (select id from material where name = 'Brilliant Diamond Fragment'), (select id from material where name = 'Brilliant Diamond Chunk'), (select id from material where name = 'Brilliant Diamond Gemstone'));
 
 
 insert into character (name, image, stars, weapon_id, element_id, local_specialty_id, region_id, mob_material_id, ascension_boss_material_id, talent_boss_material_id, talent_book_id) values
@@ -1179,6 +1192,7 @@ insert into character (name, image, stars, weapon_id, element_id, local_specialt
    ('Tartaglia', 'images/Tartaglia_Icon.png', 5, (select id from weapon_type where name = 'Bows'), (select id from element_type where name = 'Hydro'), (select id from local_specialty where name = 'Starconch'), (select id from region where name = 'Snezhnaya'), (select id from enemy_material_tier where name = 'Fatui Skirmisher Materials'), (select id from boss_material where name = 'Cleansing Heart'), (select id from boss_material where name = 'Shard of a Foul Legacy'), (select id from talent_book_tier where name = 'Freedom Books')),
    ('Thoma', 'images/Thoma_Icon.png', 4, (select id from weapon_type where name = 'Polearms'), (select id from element_type where name = 'Pyro'), (select id from local_specialty where name = 'Fluorescent Fungus'), (select id from region where name = 'Inazuma'), (select id from enemy_material_tier where name = 'Treasure Hoarder Materials'), (select id from boss_material where name = 'Smoldering Pearl'), (select id from boss_material where name = 'Hellfire Butterfly'), (select id from talent_book_tier where name = 'Transience Books')),
    ('Tighnari', 'images/Tighnari_Icon.png', 5, (select id from weapon_type where name = 'Bows'), (select id from element_type where name = 'Dendro'), (select id from local_specialty where name = 'Nilotpala Lotus'), (select id from region where name = 'Sumeru'), (select id from enemy_material_tier where name = 'Fungus Materials'), (select id from boss_material where name = 'Majestic Hooked Beak'), (select id from boss_material where name = 'The Meaning of Aeons'), (select id from talent_book_tier where name = 'Admonition Books')),
+   ('Traveler', 'images/Traveler_Icon.png', 5, (select id from weapon_type where name = 'Swords'), null, (select id from local_specialty where name = 'Windwheel Aster'), (select id from region where name = 'Unknown'), (select id from enemy_material_tier where name = 'Hilichurl Materials'), null, null, null),
    ('Venti', 'images/Venti_Icon.png', 5, (select id from weapon_type where name = 'Bows'), (select id from element_type where name = 'Anemo'), (select id from local_specialty where name = 'Cecilia'), (select id from region where name = 'Mondstadt'), (select id from enemy_material_tier where name = 'Slime Materials'), (select id from boss_material where name = 'Hurricane Seed'), (select id from boss_material where name = 'Tail of Boreas'), (select id from talent_book_tier where name = 'Ballad Books')),
    ('Wanderer', 'images/Wanderer_Icon.png', 5, (select id from weapon_type where name = 'Catalysts'), (select id from element_type where name = 'Anemo'), (select id from local_specialty where name = 'Rukkhashava Mushrooms'), (select id from region where name = 'Sumeru'), (select id from enemy_material_tier where name = 'Nobushi Materials'), (select id from boss_material where name = 'Perpetual Caliber'), (select id from boss_material where name = 'Daka''s Bell'), (select id from talent_book_tier where name = 'Praxis Books')),
    ('Wriothesley', 'images/Wriothesley_Icon.png', 5, (select id from weapon_type where name = 'Catalysts'), (select id from element_type where name = 'Cryo'), (select id from local_specialty where name = 'Subdetection Unit'), (select id from region where name = 'Fontaine'), (select id from enemy_material_tier where name = 'Clockwork Meka Materials'), (select id from boss_material where name = '"Tourbillon Device"'), (select id from boss_material where name = 'Primordial Greenbloom'), (select id from talent_book_tier where name = 'Order Books')),
@@ -1193,6 +1207,24 @@ insert into character (name, image, stars, weapon_id, element_id, local_specialt
    ('Yoimiya', 'images/Yoimiya_Icon.png', 5, (select id from weapon_type where name = 'Bows'), (select id from element_type where name = 'Pyro'), (select id from local_specialty where name = 'Naku Weed'), (select id from region where name = 'Inazuma'), (select id from enemy_material_tier where name = 'Samachurl Materials'), (select id from boss_material where name = 'Smoldering Pearl'), (select id from boss_material where name = 'Dragon Lord''s Crown'), (select id from talent_book_tier where name = 'Transience Books')),
    ('Yun Jin', 'images/Yun_Jin_Icon.png', 4, (select id from weapon_type where name = 'Polearms'), (select id from element_type where name = 'Geo'), (select id from local_specialty where name = 'Glaze Lily'), (select id from region where name = 'Liyue'), (select id from enemy_material_tier where name = 'Hilichurl Materials'), (select id from boss_material where name = 'Riftborn Regalia'), (select id from boss_material where name = 'Ashen Heart'), (select id from talent_book_tier where name = 'Diligence Books')),
    ('Zhongli', 'images/Zhongli_Icon.png', 5, (select id from weapon_type where name = 'Polearms'), (select id from element_type where name = 'Geo'), (select id from local_specialty where name = 'Cor Lapis'), (select id from region where name = 'Liyue'), (select id from enemy_material_tier where name = 'Slime Materials'), (select id from boss_material where name = 'Basalt Pillar'), (select id from boss_material where name = 'Tusk of Monoceros Caeli'), (select id from talent_book_tier where name = 'Gold Books'));
+
+
+insert into traveler_talent_material (element_id, talent, mob_material_id, first_book_id, second_book_id, third_book_id, talent_boss_material_id) values
+   ((select id from element_type where name = 'Anemo'), 'normal', (select id from enemy_material_tier where name = 'Samachurl Materials'), (select id from talent_book_tier where name = 'Freedom Books'), (select id from talent_book_tier where name = 'Resistance Books'), (select id from talent_book_tier where name = 'Ballad Books'), (select id from boss_material where name = 'Dvalin''s Sigh')),
+   ((select id from element_type where name = 'Anemo'), 'elemental', (select id from enemy_material_tier where name = 'Samachurl Materials'), (select id from talent_book_tier where name = 'Freedom Books'), (select id from talent_book_tier where name = 'Resistance Books'), (select id from talent_book_tier where name = 'Ballad Books'), (select id from boss_material where name = 'Dvalin''s Sigh')),
+   ((select id from element_type where name = 'Anemo'), 'burst', (select id from enemy_material_tier where name = 'Samachurl Materials'), (select id from talent_book_tier where name = 'Freedom Books'), (select id from talent_book_tier where name = 'Resistance Books'), (select id from talent_book_tier where name = 'Ballad Books'), (select id from boss_material where name = 'Dvalin''s Sigh')),
+   ((select id from element_type where name = 'Geo'), 'normal', (select id from enemy_material_tier where name = 'Samachurl Materials'), (select id from talent_book_tier where name = 'Freedom Books'), (select id from talent_book_tier where name = 'Resistance Books'), (select id from talent_book_tier where name = 'Ballad Books'), (select id from boss_material where name = 'Dvalin''s Sigh')),
+   ((select id from element_type where name = 'Geo'), 'elemental', (select id from enemy_material_tier where name = 'Hilichurl Shooter Materials'), (select id from talent_book_tier where name = 'Prosperity Books'), (select id from talent_book_tier where name = 'Diligence Books'), (select id from talent_book_tier where name = 'Gold Books'), (select id from boss_material where name = 'Tail of Boreas')),
+   ((select id from element_type where name = 'Geo'), 'burst', (select id from enemy_material_tier where name = 'Hilichurl Shooter Materials'), (select id from talent_book_tier where name = 'Prosperity Books'), (select id from talent_book_tier where name = 'Diligence Books'), (select id from talent_book_tier where name = 'Gold Books'), (select id from boss_material where name = 'Tail of Boreas')),
+   ((select id from element_type where name = 'Electro'), 'normal', (select id from enemy_material_tier where name = 'Nobushi Materials'), (select id from talent_book_tier where name = 'Transience Books'), (select id from talent_book_tier where name = 'Elegance Books'), (select id from talent_book_tier where name = 'Light Books'), (select id from boss_material where name = 'Dragon Lord''s Crown')),
+   ((select id from element_type where name = 'Electro'), 'elemental', (select id from enemy_material_tier where name = 'Nobushi Materials'), (select id from talent_book_tier where name = 'Transience Books'), (select id from talent_book_tier where name = 'Elegance Books'), (select id from talent_book_tier where name = 'Light Books'), (select id from boss_material where name = 'Dragon Lord''s Crown')),
+   ((select id from element_type where name = 'Electro'), 'burst', (select id from enemy_material_tier where name = 'Nobushi Materials'), (select id from talent_book_tier where name = 'Transience Books'), (select id from talent_book_tier where name = 'Elegance Books'), (select id from talent_book_tier where name = 'Light Books'), (select id from boss_material where name = 'Dragon Lord''s Crown')),
+   ((select id from element_type where name = 'Dendro'), 'normal', (select id from enemy_material_tier where name = 'Fungus Materials'), (select id from talent_book_tier where name = 'Admonition Books'), (select id from talent_book_tier where name = 'Ingenuity Books'), (select id from talent_book_tier where name = 'Praxis Books'), (select id from boss_material where name = 'Mudra of the Malefic General')),
+   ((select id from element_type where name = 'Dendro'), 'elemental', (select id from enemy_material_tier where name = 'Fungus Materials'), (select id from talent_book_tier where name = 'Admonition Books'), (select id from talent_book_tier where name = 'Ingenuity Books'), (select id from talent_book_tier where name = 'Praxis Books'), (select id from boss_material where name = 'Mudra of the Malefic General')),
+   ((select id from element_type where name = 'Dendro'), 'burst', (select id from enemy_material_tier where name = 'Fungus Materials'), (select id from talent_book_tier where name = 'Admonition Books'), (select id from talent_book_tier where name = 'Ingenuity Books'), (select id from talent_book_tier where name = 'Praxis Books'), (select id from boss_material where name = 'Mudra of the Malefic General')),
+   ((select id from element_type where name = 'Hydro'), 'normal', (select id from enemy_material_tier where name = 'Fontemer Aberrant Materials'), (select id from talent_book_tier where name = 'Equity Books'), (select id from talent_book_tier where name = 'Justice Books'), (select id from talent_book_tier where name = 'Order Books'), (select id from boss_material where name = 'Worldspan Fern')),
+   ((select id from element_type where name = 'Hydro'), 'elemental', (select id from enemy_material_tier where name = 'Fontemer Aberrant Materials'), (select id from talent_book_tier where name = 'Equity Books'), (select id from talent_book_tier where name = 'Justice Books'), (select id from talent_book_tier where name = 'Order Books'), (select id from boss_material where name = 'Worldspan Fern')),
+   ((select id from element_type where name = 'Hydro'), 'burst', (select id from enemy_material_tier where name = 'Fontemer Aberrant Materials'), (select id from talent_book_tier where name = 'Equity Books'), (select id from talent_book_tier where name = 'Justice Books'), (select id from talent_book_tier where name = 'Order Books'), (select id from boss_material where name = 'Worldspan Fern'));
 
 
 insert into character_level_cost (level, experience) values
