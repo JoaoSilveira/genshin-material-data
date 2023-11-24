@@ -1,3 +1,4 @@
+-- Types of weapons a character can use
 create table if not exists weapon_type (
    id integer primary key,
    name text unique not null,
@@ -5,6 +6,7 @@ create table if not exists weapon_type (
 );
 
 
+-- Elements that exist in the game
 create table if not exists element_type (
    id integer primary key,
    name text unique not null,
@@ -12,6 +14,7 @@ create table if not exists element_type (
 );
 
 
+-- Regions in the game
 create table if not exists region (
    id integer primary key,
    name text unique not null,
@@ -19,6 +22,7 @@ create table if not exists region (
 );
 
 
+-- Common enemies, elite enemies and bosses
 create table if not exists enemy (
    id integer primary key,
    name text not null,
@@ -26,6 +30,7 @@ create table if not exists enemy (
 );
 
 
+-- Local specialties to regions
 create table if not exists local_specialty (
    id integer primary key,
    name text unique not null,
@@ -34,6 +39,7 @@ create table if not exists local_specialty (
 );
 
 
+-- Various kinds of materials, usually referenced by `tier` tables
 create table if not exists material (
    id integer primary key,
    name text unique not null,
@@ -42,6 +48,7 @@ create table if not exists material (
 );
 
 
+-- Materials dropped by bosses (weekly included)
 create table if not exists boss_material (
    id integer primary key,
    name text unique not null,
@@ -52,6 +59,7 @@ create table if not exists boss_material (
 );
 
 
+-- Enemy material drop grouped in tiers by its stars
 create table if not exists enemy_material_tier (
    id integer primary key,
    name text unique not null,
@@ -61,6 +69,8 @@ create table if not exists enemy_material_tier (
 );
 
 
+-- Table used to join material tier and enemies,
+-- to know which enemies drop which items
 create table if not exists enemy_material_tier_join_enemy (
    enemy_id integer not null references enemy(id),
    tier_id integer not null references enemy_material_tier(id),
@@ -68,10 +78,12 @@ create table if not exists enemy_material_tier_join_enemy (
 );
 
 
+-- Talent books grouped in tiers
 create table if not exists talent_book_tier (
    id integer primary key,
    name text unique not null,
    temple text not null,
+   -- days separated by '/'. Ex: Sunday/Tuesday/Friday
    open_days text not null,
    region_id integer not null references region(id),
    low_id integer not null references material(id),
@@ -80,9 +92,12 @@ create table if not exists talent_book_tier (
 );
 
 
+-- Material used to ascend weapons grouped in tiers
+-- (temple, open_days) is an unique value
 create table if not exists weapon_material_tier (
    id integer primary key,
    temple text not null,
+   -- days separated by '/'. Ex: Sunday/Tuesday/Friday
    open_days text not null,
    region_id integer not null references region(id),
    low_id integer not null references material(id),
@@ -92,9 +107,11 @@ create table if not exists weapon_material_tier (
 );
 
 
+-- Gems used by charactes to ascend grouped in tiers
 create table if not exists gem_tier (
    id integer primary key,
    name text unique not null,
+   -- only traveler has this as `null`
    element_id integer references element_type(id),
    low_id integer not null references material(id),
    mid_id integer not null references material(id),
@@ -103,6 +120,9 @@ create table if not exists gem_tier (
 );
 
 
+-- Characters and material used to ascend and level talents
+-- Traveler will have most of these as null and will use `traveler_talent_material`
+-- to manage talents of each element
 create table if not exists character (
    id integer primary key,
    name text unique not null,
@@ -119,10 +139,14 @@ create table if not exists character (
 );
 
 
+-- Materials used by traveler to ascend each talent of each element
 create table if not exists traveler_talent_material (
    element_id integer not null references element_type(id),
    talent string not null check (talent in ('normal', 'elemental', 'burst')),
    mob_material_id integer not null references enemy_material_tier(id),
+
+   -- the books loop through the levels like [first, second, third, first, second, ...],
+   -- only the order is registered here
    first_book_id integer not null references talent_book_tier(id),
    second_book_id integer not null references talent_book_tier(id),
    third_book_id integer not null references talent_book_tier(id),
@@ -130,15 +154,20 @@ create table if not exists traveler_talent_material (
 );
 
 
+-- Experience needed to get to the next level. Ex: (1, 500) -> needs 500EXP to reach level 2
 create table if not exists character_level_cost (
    level integer primary key,
    experience integer not null
 );
 
 
+-- Character ascension cost and condition
 create table if not exists character_ascension_cost (
+   -- functions as ID, is the number of ascension stars before ascending
    ascension_star integer primary key,
+   -- level required to ascend
    level integer not null,
+   -- material quantity to ascend
    mora integer not null,
    boss_material integer not null,
    gem_sliver integer not null,
@@ -152,9 +181,13 @@ create table if not exists character_ascension_cost (
 );
 
 
+-- requirements and cost of chracter's talents
 create table if not exists talent_cost (
+   -- talent's level, cost is to level up
    level integer primary key,
+   -- required character ascension
    required_ascension integer not null references character_ascension_cost(star),
+   -- material quantity required
    mora integer not null,
    low_material integer not null,
    mid_material integer not null,
@@ -167,6 +200,7 @@ create table if not exists talent_cost (
 );
 
 
+-- weapons and material necessary to ascend it
 create table if not exists weapon (
    id integer primary key,
    name text unique not null,
@@ -179,6 +213,7 @@ create table if not exists weapon (
 );
 
 
+-- experience necessary to level up a weapon by star
 create table if not exists weapon_level_cost (
    level integer,
    weapon_stars integer,
@@ -187,18 +222,25 @@ create table if not exists weapon_level_cost (
 );
 
 
+-- cost to ascend a weapon by its stars
 create table if not exists weapon_ascension_cost (
+   -- functions as id, current ascension star count
    ascension_star integer,
    weapon_stars integer,
+   -- level required to ascend to next level
    level integer not null,
+   -- material quantity required
    mora integer not null,
+   -- weapon materials
    low_material integer not null,
    mid_material integer not null,
    high_material integer not null,
    highest_material integer not null,
+   -- elite enemy materials
    low_elite integer not null,
    mid_elite integer not null,
    high_elite integer not null,
+   -- common enemy materials
    low_common integer not null,
    mid_common integer not null,
    high_common integer not null,
@@ -206,6 +248,7 @@ create table if not exists weapon_ascension_cost (
 );
 
 
+-- materials that give experience to characters or weapons
 create table if not exists experience_material (
    id integer primary key,
    name text unique not null,
@@ -218,6 +261,7 @@ create table if not exists experience_material (
 create table if not exists experience_material_tier (
    id integer primary key,
    name text unique not null,
+   -- how much exp costs 1 mora
    exp_to_mora_rate integer not null check (exp_to_mora_rate > 0),
    low_id integer not null references experience_material(id),
    mid_id integer not null references experience_material(id),
