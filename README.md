@@ -2,7 +2,9 @@
 
 This is where I will put data related to Genshin Impact characters, weapons, and related entities for ascension and talent leveling.
 
-The repository consists of data and scripts used to extract and update data.
+The repository consists of data and scripts used to extract and update data. Its main purpose is to provide data in SQLite format.
+
+**The data here is not mine, it belongs to its rightful owner(s).** I just organized it in way convinent to me.
 
 ## Organization
 
